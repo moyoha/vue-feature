@@ -9,6 +9,7 @@ import { reactive } from 'vue';
 
 type TDir = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom';
 const config = reactive({
-  dragNodes: ['left', 'right', 'top', 'bottom'] as TDir[]
+  dragNodes: ['left', 'right', 'top', 'bottom'] as TDir[],
+  aspectRatio: 0
 })
 </script>

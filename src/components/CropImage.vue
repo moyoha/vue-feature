@@ -6,7 +6,11 @@
       @mousedown.self="drag"
       @touchstart.self="drag"
       ref="cropRef"
-      :style="`transform: translate(${newTx}px, ${newTy}px); width: ${newWidth}px; height: ${newHeight}px;`"
+      :style="{
+        transform: `translate(${newTx}px, ${newTy}px)`,
+        width: `${newWidth}px`,
+        height: `${newHeight}px`
+      }"
     >
       <div v-if="options.dragNodes.includes('left')" @mousedown="zoom($event, leftZoom)"  @touchstart="zoom($event, leftZoom)" class="crop-vertical crop-left"></div>
       <div v-if="options.dragNodes.includes('right')" @mousedown="zoom($event, rightZoom)" @touchstart="zoom($event, rightZoom)" class="crop-vertical crop-right"></div>
@@ -18,7 +22,14 @@
       <div v-if="options.dragNodes.includes('rightBottom')" @mousedown="zoom($event, rightBottomZoom)" @touchstart="zoom($event, rightBottomZoom)" class="crop-horn crop-rightBottom"></div>
     </div>
     <div
-      :style="`width: ${newWidth}px; height: ${newHeight}px; border-top-width: ${borderTopWidth}; border-left-width: ${borderLeftWidth}; border-bottom-width: ${borderBottomWidth}; border-right-width: ${borderRightWidth}`"
+      :style="{
+        width: `${newWidth}px`,
+        height: `${newHeight}px`,
+        'border-top-width': `${borderTopWidth}px`,
+        'border-left-width': `${borderLeftWidth}px`,
+        'border-bottom-width': `${borderBottomWidth}px`,
+        'border-right-width': `${borderRightWidth}px`
+      }"
       class="crop-border"
     >
     </div>
@@ -39,7 +50,7 @@ interface IConfig {
 }
 const props = defineProps<{
   imgSrc: string,
-  config: Partial<IConfig>
+  config?: Partial<IConfig>
 }>()
 
 const defaultConfig: IConfig = {
@@ -48,7 +59,7 @@ const defaultConfig: IConfig = {
   width: 100,
   height: 100,
   aspectRatio: 4/5,
-  dragNodes: []
+  dragNodes: ['left', 'right', 'top', 'bottom', 'leftTop', 'leftBottom', 'rightTop', 'rightBottom']
 }
 const options: IConfig = { ...defaultConfig, ...props.config };
 const imgRef = ref();
@@ -80,10 +91,10 @@ let ty = 0;
 const newTx = ref(0);
 const newTy = ref(0);
 
-const borderTopWidth = computed(() => `${newTy.value}px`);
-const borderBottomWidth = computed(() => `${pHeight.value - newTy.value - newHeight.value}px`);
-const borderLeftWidth = computed(() => `${newTx.value}px`);
-const borderRightWidth = computed(() => `${pWidth.value - newTx.value - newWidth.value}px`);
+const borderTopWidth = computed(() => newTy.value);
+const borderBottomWidth = computed(() => pHeight.value - newTy.value - newHeight.value);
+const borderLeftWidth = computed(() => newTx.value);
+const borderRightWidth = computed(() => pWidth.value - newTx.value - newWidth.value);
 function init() {
   if(options.aspectRatio) {
     // 修正宽高比
