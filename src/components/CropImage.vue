@@ -8,56 +8,87 @@
       ref="cropRef"
       :style="`transform: translate(${newTx}px, ${newTy}px); width: ${newWidth}px; height: ${newHeight}px;`"
     >
-      <div @mousedown="zoom($event, leftZoom)"  @touchstart="zoom($event, leftZoom)" class="crop-vertical crop-left"></div>
-      <div @mousedown="zoom($event, rightZoom)" @touchstart="zoom($event, rightZoom)" class="crop-vertical crop-right"></div>
-      <div @mousedown="zoom($event, topZoom)" @touchstart="zoom($event, topZoom)" class="crop-horizontal crop-top"></div>
-      <div @mousedown="zoom($event, bottomZoom)" @touchstart="zoom($event, bottomZoom)" class="crop-horizontal crop-bottom"></div>
-      <div @mousedown="zoom($event, leftTopZoom)" @touchstart="zoom($event, leftTopZoom)" class="crop-horn crop-leftTop"></div>
-      <div @mousedown="zoom($event, leftBottomZoom)" @touchstart="zoom($event, leftBottomZoom)" class="crop-horn crop-leftBottom"></div>
-      <div @mousedown="zoom($event, rightTopZoom)" @touchstart="zoom($event, rightTopZoom)" class="crop-horn crop-rightTop"></div>
-      <div @mousedown="zoom($event, rightBottomZoom)" @touchstart="zoom($event, rightBottomZoom)" class="crop-horn crop-rightBottom"></div>
+      <div v-if="options.dragNodes.includes('left')" @mousedown="zoom($event, leftZoom)"  @touchstart="zoom($event, leftZoom)" class="crop-vertical crop-left"></div>
+      <div v-if="options.dragNodes.includes('right')" @mousedown="zoom($event, rightZoom)" @touchstart="zoom($event, rightZoom)" class="crop-vertical crop-right"></div>
+      <div v-if="options.dragNodes.includes('top')" @mousedown="zoom($event, topZoom)" @touchstart="zoom($event, topZoom)" class="crop-horizontal crop-top"></div>
+      <div v-if="options.dragNodes.includes('bottom')" @mousedown="zoom($event, bottomZoom)" @touchstart="zoom($event, bottomZoom)" class="crop-horizontal crop-bottom"></div>
+      <div v-if="options.dragNodes.includes('leftTop')" @mousedown="zoom($event, leftTopZoom)" @touchstart="zoom($event, leftTopZoom)" class="crop-horn crop-leftTop"></div>
+      <div v-if="options.dragNodes.includes('leftBottom')" @mousedown="zoom($event, leftBottomZoom)" @touchstart="zoom($event, leftBottomZoom)" class="crop-horn crop-leftBottom"></div>
+      <div v-if="options.dragNodes.includes('rightTop')" @mousedown="zoom($event, rightTopZoom)" @touchstart="zoom($event, rightTopZoom)" class="crop-horn crop-rightTop"></div>
+      <div v-if="options.dragNodes.includes('rightBottom')" @mousedown="zoom($event, rightBottomZoom)" @touchstart="zoom($event, rightBottomZoom)" class="crop-horn crop-rightBottom"></div>
     </div>
-    <div class="crop-border" ref="borderRef">
+    <div
+      :style="`width: ${newWidth}px; height: ${newHeight}px; border-top-width: ${borderTopWidth}; border-left-width: ${borderLeftWidth}; border-bottom-width: ${borderBottomWidth}; border-right-width: ${borderRightWidth}`"
+      class="crop-border"
+    >
     </div>
   </div>
 </template>
 
 <script lang='ts' setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 type TDir = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom';
-const props = withDefaults(defineProps<{
+interface IConfig {
+  minWidth: number,
+  minHeight: number,
+  width: number,
+  height: number,
+  aspectRatio: number,
+  dragNodes: TDir[]
+}
+const props = defineProps<{
   imgSrc: string,
-  config?: {
-    minWidth: number,
-    minHeight: number,
-    width: number,
-    height: number,
-    aspectRatio?: number,
-    dragNodes: TDir[]
-  }
-}>(), {
-  config: () => ({
-    minWidth: 96,
-    minHeight: 96,
-    width: 100,
-    height: 100,
-    aspectRatio: 4/5,
-    dragNodes: []
-  })
-})
+  config: Partial<IConfig>
+}>()
 
-const options = props.config;
+const defaultConfig: IConfig = {
+  minWidth: 100,
+  minHeight: 100,
+  width: 100,
+  height: 100,
+  aspectRatio: 4/5,
+  dragNodes: []
+}
+const options: IConfig = { ...defaultConfig, ...props.config };
 const imgRef = ref();
 let eventTypes = {
   start: 'mousedown',
   end: 'mouseup',
   move: 'mousemove'
 }
+onMounted(() => {
+  init();
+});
+
+let pWidth = ref(0);
+let pHeight = ref(0);
+function showCrop() {
+  // 获取父元素的宽高
+  pWidth.value = imgRef.value.clientWidth
+  pHeight.value = imgRef.value.clientHeight
+  
+  getSelfInfo()
+}
+const cropRef = ref();
+let width = 0;
+let height = 0;
+const newWidth = ref(options.width);
+const newHeight = ref(options.height);
+let tx = 0;
+let ty = 0;
+const newTx = ref(0);
+const newTy = ref(0);
+
+const borderTopWidth = computed(() => `${newTy.value}px`);
+const borderBottomWidth = computed(() => `${pHeight.value - newTy.value - newHeight.value}px`);
+const borderLeftWidth = computed(() => `${newTx.value}px`);
+const borderRightWidth = computed(() => `${pWidth.value - newTx.value - newWidth.value}px`);
 function init() {
   if(options.aspectRatio) {
-    // 修正最小宽高比
+    // 修正宽高比
     options.minHeight = options.minWidth / options.aspectRatio;
+    newHeight.value = height = options.width / options.aspectRatio;
   }
   if(imgRef.value.complete) {
     showCrop();
@@ -74,29 +105,6 @@ function init() {
     }
   }
 }
-onMounted(() => {
-  init();
-});
-
-let pWidth = 0;
-let pHeight = 0;
-function showCrop() {
-  // 获取父元素的宽高
-  pWidth = imgRef.value.clientWidth
-  pHeight = imgRef.value.clientHeight
-  
-  getSelfInfo()
-  calcBorder()
-}
-const cropRef = ref();
-let width = 0;
-let height = 0;
-const newWidth = ref(options.width);
-const newHeight = ref(options.height);
-let tx = 0;
-let ty = 0;
-const newTx = ref(0);
-const newTy = ref(0);
 // 获取裁剪元素的宽高、偏移
 function getSelfInfo() {
   newWidth.value = width = cropRef.value.offsetWidth;
@@ -129,15 +137,7 @@ function getInfo(e: MouseEvent | Touch) {
   startY = e.clientY
 }
 
-const borderRef = ref();
-function calcBorder() {
-  borderRef.value.style.width = `${newWidth.value}px`;
-  borderRef.value.style.height = `${newHeight.value}px`;
-  borderRef.value.style['border-top-width'] = `${newTy.value}px`;
-  borderRef.value.style['border-bottom-width'] = `${pHeight - newTy.value - newHeight.value}px`;
-  borderRef.value.style['border-left-width'] = `${newTx.value}px`;
-  borderRef.value.style['border-right-width'] = `${pWidth - newTx.value - newWidth.value}px`;
-}
+
 
 // 拖动实现
 function drag(ev: MouseEvent | TouchEvent) {
@@ -145,9 +145,8 @@ function drag(ev: MouseEvent | TouchEvent) {
   getInfo(e)
   const handleMove = (ev: MouseEvent | TouchEvent) => {
     const e = getEvent(ev);
-    newTx.value = Math.max(0, Math.min(tx + e.clientX - startX, pWidth - width));
-    newTy.value = Math.max(0, Math.min(ty + e.clientY - startY, pHeight - height));
-    calcBorder()
+    newTx.value = Math.max(0, Math.min(tx + e.clientX - startX, pWidth.value - width));
+    newTy.value = Math.max(0, Math.min(ty + e.clientY - startY, pHeight.value - height));
   }
   // @ts-ignore
   document.addEventListener(eventTypes.move, handleMove)
@@ -158,18 +157,15 @@ function drag(ev: MouseEvent | TouchEvent) {
 }
 // 缩放实现
 function zoom(ev: MouseEvent | TouchEvent, dir: Function) {
-  console.log(dir.name);
   const e = getEvent(ev);
   getInfo(e);
   const handleZoom = (ev: MouseEvent | TouchEvent) => {
     const e = getEvent(ev);
     dir(e);
-    calcBorder()
   }
   // @ts-ignore
   document.addEventListener(eventTypes.move, handleZoom)
   document.addEventListener(eventTypes.end, () => {
-    console.log('end');
     // @ts-ignore
     document.removeEventListener(eventTypes.move, handleZoom)
   })
@@ -259,7 +255,7 @@ function getMaxHeightToTop() {
 }
 // 获取向下缩放的最大高度
 function getMaxHeightToBottom() {
-  return pHeight - ty;
+  return pHeight.value - ty;
 }
 // 获取向左缩放的最大宽度
 function getMaxWidthToLeft() {
@@ -267,7 +263,7 @@ function getMaxWidthToLeft() {
 }
 // 获取向右缩放的最大宽度
 function getMaxWidthToRight() {
-  return pWidth - tx;
+  return pWidth.value - tx;
 }
 function getEvent(event: MouseEvent | TouchEvent) {
   if(event instanceof TouchEvent) {

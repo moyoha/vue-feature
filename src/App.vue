@@ -1,11 +1,7 @@
 <template>
-  <CropImage :img-src="Image"></CropImage>
+  <router-view></router-view>
 </template>
 
 <script lang="ts" setup>
-import Image from './assets/imgs/2.jpeg'
-import CropImage from './components/CropImage.vue'
+import { RouterView } from 'vue-router'
 </script>
-
-<style>
-</style>
