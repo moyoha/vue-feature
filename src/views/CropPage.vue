@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import Image from '@/assets/imgs/2.jpeg'
-import CropImage from '@/components/CropImage.vue'
+import CropImage from '@/components/crop/CropImage.vue'
 import { reactive } from 'vue';
 
 type TDir = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom';
