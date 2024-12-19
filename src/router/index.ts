@@ -13,6 +13,16 @@ const router = createRouter({
       path: '/crop',
       name: 'crop',
       component: () => import('@/views/CropPage.vue')
+    },
+    {
+      path: '/rich-input',
+      name: 'rich-input',
+      component: () => import('@/views/RichInputPage.vue')
+    },
+    {
+      path: '/demo1',
+      name: 'demo1',
+      component: () => import('@/views/Demo1.vue')
     }
   ]
 })
