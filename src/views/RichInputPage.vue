@@ -1,34 +1,73 @@
 <template>
-    <div id="container" contenteditable="true" v-if="showInput">
-        <span id="content"></span>
-    </div>
-    <!-- <span id="username" v-show="showUsername">@{{ username }}</span> -->
+    <div id="container" ref="container" contenteditable="true" v-show="showInput"></div>
     <div class="op">
-        <button @click="showInput = true">显示输入框</button>
+        <button @click="level1Comment()">一级评论</button>
         <button @click="showInput = false">隐藏输入框</button>
         <button @click="submitComment()">发布评论</button>
-        <button @click="replyComment()">回复评论</button>
+        <button @click="replyComment('用户1', false)">回复一级评论</button>
+        <button @click="replyComment('用户2', true)">回复二级评论</button>
     </div>
 </template>
 
 <script lang='ts' setup>
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
-const showInput = ref(true);
-const username = ref('张三');
+const showInput = ref(false);
+const container = ref();
 const showUsername = ref(false);
 
+const level1Comment = () => {
+  showInput.value = true;
+  showUsername.value = false;
+  focusCommentEnd();
+}
+
+const focusCommentEnd = () => {
+    
+    nextTick(() => {
+        // container.value.focus();
+        // const range = new Range();
+        const selection = getSelection();
+        selection?.collapseToEnd()
+        // range.setStartAfter(container.value);
+        // range.setEndAfter(container.value);
+        // selection?.removeAllRanges();
+        // selection?.addRange(range);
+    })
+}
+
 const submitComment = () => {
-    console.log('提交评论');
+    const cloneNode = container.value.cloneNode(true);
+    // 删除用户名
+    const usernameEl = cloneNode.querySelector('#username');
+    if(usernameEl) {
+      usernameEl.remove();
+    }
+    const text = cloneNode.innerText;
+    console.log('发布评论', text);
+    container.value.innerText = '';
+    showInput.value = false;
 };
 
-const replyComment = () => {
-    showUsername.value = true;
-    console.log('回复评论');
+const replyComment = (username: string, isShow: boolean) => {
+    showInput.value = true;
+    focusCommentEnd();
+    let usernameEl = container.value.querySelector('#username');
+    if(!isShow) {
+        usernameEl?.remove();
+        return;
+    }
+    if(!usernameEl) {
+        usernameEl = document.createElement('span');
+        usernameEl.id = 'username';
+        usernameEl.contentEditable = 'false';
+        container.value.prepend(usernameEl);
+    }
+    usernameEl.innerText = `@${username}`;
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 #container {
     box-sizing: border-box;
     border: 1px solid #5f5f5f;
@@ -38,18 +77,20 @@ const replyComment = () => {
     line-height: 1.2;
     font-size: 16px;
     padding: 9px 6px;
+    :deep(#username) {
+        color: #8E8E8E;
+        display: inline-block;
+        /* 不能用 margin-right, 不能用空格 */
+        padding-right: 5px;
+    }
 }
 
 .op {
-    margin-top: 20px;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 20px;
     gap: 10px;
 }
 
-#username {
-    color: #8E8E8E;
-    display: inline-block;
-    /* 不能用 margin-right, 不能用空格 */
-    padding-right: 5px;
-}
 </style>
