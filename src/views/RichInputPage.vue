@@ -23,16 +23,13 @@ const level1Comment = () => {
 }
 
 const focusCommentEnd = () => {
-    
     nextTick(() => {
-        // container.value.focus();
-        // const range = new Range();
+        const range = new Range();
+        range.setStart(container.value, container.value.childNodes.length);
+        range.setEnd(container.value, container.value.childNodes.length);
         const selection = getSelection();
-        selection?.collapseToEnd()
-        // range.setStartAfter(container.value);
-        // range.setEndAfter(container.value);
-        // selection?.removeAllRanges();
-        // selection?.addRange(range);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
     })
 }
 
@@ -51,7 +48,6 @@ const submitComment = () => {
 
 const replyComment = (username: string, isShow: boolean) => {
     showInput.value = true;
-    focusCommentEnd();
     let usernameEl = container.value.querySelector('#username');
     if(!isShow) {
         usernameEl?.remove();
@@ -64,6 +60,7 @@ const replyComment = (username: string, isShow: boolean) => {
         container.value.prepend(usernameEl);
     }
     usernameEl.innerText = `@${username}`;
+    focusCommentEnd();
 };
 </script>
 
