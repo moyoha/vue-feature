@@ -1,7 +1,7 @@
 <template>
     <div id="container" ref="container" contenteditable="true" v-show="showInput"></div>
     <div class="op">
-        <button @click="level1Comment()">一级评论</button>
+        <button @click="level1Comment()">立即评论</button>
         <button @click="showInput = false">隐藏输入框</button>
         <button @click="submitComment()">发布评论</button>
         <button @click="replyComment('用户1', false)">回复一级评论</button>
