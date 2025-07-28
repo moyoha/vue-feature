@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../App.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../App.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +19,12 @@ const router = createRouter({
       name: 'rich-input',
       component: () => import('@/views/RichInputPage.vue')
     },
+    {
+      path: '/infinite-scroll',
+      name: 'infinite-scroll',
+      component: () => import('@/views/InfiniteScroll.vue')
+    },
   ]
-})
+});
 
-export default router
+export default router;
