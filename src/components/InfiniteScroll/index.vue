@@ -1,8 +1,9 @@
 <template>
   <div class="container" ref="containerEl">
-    <div class="top" ref="topEl" :style="{ height: `${100 * startIndex}px` }"></div>
-    <div v-for="item in data" :key="item" class="item">{{ item }}</div>
-    <div class="bottom" ref="bottomEl"></div>
+    <div ref="topEl"></div>
+    <div ref="topEl" :style="{ height: `${100 * startIndex}px` }"></div>
+    <div v-for="item in showData" :key="item" class="item">{{ item }}</div>
+    <div ref="bottomEl"></div>
   </div>
 </template>
 
@@ -11,46 +12,42 @@ import { ref, onMounted, nextTick } from 'vue';
 
 const topEl = ref<HTMLDivElement | null>(null);
 const bottomEl = ref<HTMLDivElement | null>(null);
-
-const data = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-const startIndex = ref(0);
-
-const topObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      console.log('topObserver', entry);
-    }
-  });
-});
-
-let bottomIsShow = false;
 const containerEl = ref<HTMLDivElement | null>(null);
 
+const data = generateRandomPermutation(1000);
+const showData = ref<number[]>([]);
+const startIndex = ref(0);
 
 onMounted(async () => {
-  // await nextTick();
-  // topObserver.observe(topEl.value!);
+  const topObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      startIndex.value = Math.max(Math.floor((containerEl.value!.scrollTop) / 100 - 30), 0);
+      showData.value = data.slice(startIndex.value, 30);
+    }
+  }, {
+    root: containerEl.value,
+    rootMargin: '500px 0px 0px 0px'
+  });
+  topObserver.observe(topEl.value!);
+
   const bottomObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      console.log('bottomObserver-------------', entry);
-      if (entry.isIntersecting) {
-        bottomIsShow = true;
-        // 加载数据
-        setTimeout(() => {
-          for (let i = 0; i < 10; i++) {
-            data.value.push(data.value.length + 1);
-          }
-        }, 1000);
-      } else {
-        bottomIsShow = false;
-      }
-    });
+    console.log('bottomObserver', entries.length, entries[0].isIntersecting);
+    if (entries[0].isIntersecting) {
+      startIndex.value = Math.max(Math.floor((containerEl.value!.scrollTop - 500) / 100), 0);
+      showData.value = data.slice(startIndex.value, startIndex.value + 30);
+      console.log(containerEl.value!.scrollTop, startIndex.value, showData.value);
+    }
   }, {
     root: containerEl.value,
     rootMargin: '0px 0px 500px 0px'
   });
   bottomObserver.observe(bottomEl.value!);
 });
+
+
+function generateRandomPermutation(n: number) {
+  return Array.from({ length: n }, (_, index) => index + 1);
+}
 </script>
 
 <style lang="scss" scoped>
