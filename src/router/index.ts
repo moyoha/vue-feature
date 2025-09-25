@@ -20,9 +20,9 @@ const router = createRouter({
       component: () => import('@/views/RichInputPage.vue')
     },
     {
-      path: '/infinite-scroll',
-      name: 'infinite-scroll',
-      component: () => import('@/views/InfiniteScroll.vue')
+      path: '/test',
+      name: 'test',
+      component: () => import('@/views/Test.vue')
     },
   ]
 });
